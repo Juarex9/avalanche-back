@@ -44,6 +44,10 @@ forge fmt
 - `pr/tests-deploy` — Phase 3 (tests + deploy script)
 - `pr/indexer-stub` — Phase 5 (indexer stub + docs) ✅
 
+## Backend API (diseño)
+
+El front está en **otro repo**. Plan del servicio HTTP + indexador: **[docs/backend-design.md](docs/backend-design.md)**.
+
 ## Indexer stub (Phase 5)
 
 CNBV uses `script/IndexerStub.s.sol` and `docs/INDEXER.md` to:
