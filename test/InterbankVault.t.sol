@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {InterbankVault} from "../src/InterbankVault.sol";
 import {EIP712} from "../src/libraries/EIP712.sol";
 
@@ -18,12 +18,20 @@ contract InterbankVaultTest is Test {
     // Reusable signing address
     address public bank;
 
+    /// secp256k1 curve order (malleability: high-s rejected by OZ ECDSA)
+    uint256 internal constant SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
+
     function setUp() public {
         safe = makeAddr("finNovaSafe");
         bankKey = uint256(keccak256(abi.encode("bank key")));
         bank = vm.addr(bankKey);
 
         vault = new InterbankVault(safe, cnbvViewPubKey);
+    }
+
+    function test_constructor_zeroSafe_reverts() public {
+        vm.expectRevert(InterbankVault.ZeroSafeAddress.selector);
+        new InterbankVault(address(0), bytes32(uint256(1)));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -84,9 +92,8 @@ contract InterbankVaultTest is Test {
         assertEq(vault.bankNonces(bank), 1);
 
         // Check transfer exists with correct state
-        InterbankVault.State state = vault.getTransferState(
-            _computeTransferId(bank, beneficiary, amount, commitment, nonce, expiry)
-        );
+        InterbankVault.State state =
+            vault.getTransferState(_computeTransferId(bank, beneficiary, amount, commitment, nonce, expiry));
         assertEq(uint256(state), uint256(InterbankVault.State.Opened));
     }
 
@@ -108,7 +115,7 @@ contract InterbankVaultTest is Test {
 
         // Try to replay — nonce already incremented
         vm.prank(bank);
-        vm.expectRevert("InterbankVault: nonce mismatch");
+        vm.expectRevert(InterbankVault.NonceMismatch.selector);
         vault.openTransfer{value: amount}(bank, beneficiary, amount, commitment, nonce, expiry, v, r, s);
     }
 
@@ -131,7 +138,7 @@ contract InterbankVaultTest is Test {
         bytes32 transferId = _computeTransferId(bank, beneficiary, amount, commitment, nonce, expiry);
 
         // Try release from EOA (not Safe)
-        vm.expectRevert("InterbankVault: only finNovaSafe");
+        vm.expectRevert(InterbankVault.OnlyFinNovaSafe.selector);
         vault.release(transferId, payable(beneficiary));
     }
 
@@ -156,7 +163,7 @@ contract InterbankVaultTest is Test {
 
         // Try refund before expiry
         vm.prank(bank);
-        vm.expectRevert("InterbankVault: not expired");
+        vm.expectRevert(InterbankVault.NotExpired.selector);
         vault.refund(transferId);
     }
 
@@ -246,8 +253,31 @@ contract InterbankVaultTest is Test {
 
         vm.deal(bank, amount);
         vm.prank(bank);
-        vm.expectRevert("InterbankVault: invalid signature");
+        vm.expectRevert(InterbankVault.InvalidSignature.selector);
         vault.openTransfer{value: amount}(bank, beneficiary, amount, commitment, nonce, expiry, v, r, s);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Test 7b: high-s (malleable) signature rejected
+    // ─────────────────────────────────────────────────────────────
+    function test_openTransfer_malleableSignatureHighS_reverts() public {
+        address beneficiary = makeAddr("beneficiary");
+        uint256 amount = 1 ether;
+        bytes32 commitment = keccak256("commitment data");
+        uint256 nonce = 0;
+        uint256 expiry = block.timestamp + 3600;
+
+        bytes32 digest = _digest(bank, beneficiary, amount, commitment, nonce, expiry);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(bankKey, digest);
+
+        uint256 sVal = uint256(s);
+        bytes32 sHigh = bytes32(SECP256K1_N - sVal);
+        uint8 vFlip = v == 27 ? uint8(28) : uint8(27);
+
+        vm.deal(bank, amount);
+        vm.prank(bank);
+        vm.expectRevert(InterbankVault.InvalidSignature.selector);
+        vault.openTransfer{value: amount}(bank, beneficiary, amount, commitment, nonce, expiry, vFlip, r, sHigh);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -265,14 +295,14 @@ contract InterbankVaultTest is Test {
         vm.deal(bank, amount);
         vm.prank(bank);
         // Send less than amount
-        vm.expectRevert("InterbankVault: value mismatch");
+        vm.expectRevert(InterbankVault.ValueMismatch.selector);
         vault.openTransfer{value: amount - 0.1 ether}(bank, beneficiary, amount, commitment, nonce, expiry, v, r, s);
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Test 9: non-bank address cannot refund
+    // Test 9: non-depositor cannot refund
     // ─────────────────────────────────────────────────────────────
-    function test_refund_onlyBank_fails() public {
+    function test_refund_onlyDepositor_fails() public {
         address beneficiary = makeAddr("beneficiary");
         uint256 amount = 1 ether;
         bytes32 commitment = keccak256("commitment data");
@@ -292,12 +322,67 @@ contract InterbankVaultTest is Test {
         // Random address tries to refund
         address random = makeAddr("random");
         vm.prank(random);
-        vm.expectRevert("InterbankVault: not bank");
+        vm.expectRevert(InterbankVault.NotDepositor.selector);
         vault.refund(transferId);
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Test 10: fork Fuji deployment (optional)
+    // Test 10: release to wrong address reverts
+    // ─────────────────────────────────────────────────────────────
+    function test_release_wrongBeneficiary_reverts() public {
+        address beneficiary = makeAddr("beneficiary");
+        address wrong = makeAddr("wrong");
+        uint256 amount = 1 ether;
+        bytes32 commitment = keccak256("commitment data");
+        uint256 nonce = 0;
+        uint256 expiry = block.timestamp + 3600;
+
+        (uint8 v, bytes32 r, bytes32 s) = _sign(bank, beneficiary, amount, commitment, nonce, expiry, bankKey);
+
+        vm.deal(bank, amount);
+        vm.prank(bank);
+        vault.openTransfer{value: amount}(bank, beneficiary, amount, commitment, nonce, expiry, v, r, s);
+
+        bytes32 transferId = _computeTransferId(bank, beneficiary, amount, commitment, nonce, expiry);
+
+        vm.prank(safe);
+        vm.expectRevert(InterbankVault.BeneficiaryMismatch.selector);
+        vault.release(transferId, payable(wrong));
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Test 11: relayer funds open — only depositor can refund after expiry
+    // ─────────────────────────────────────────────────────────────
+    function test_relayerOpens_onlyDepositorRefunds() public {
+        address relayer = makeAddr("relayer");
+        address beneficiary = makeAddr("beneficiary");
+        uint256 amount = 1 ether;
+        bytes32 commitment = keccak256("commitment data");
+        uint256 nonce = 0;
+        uint256 expiry = block.timestamp + 1;
+
+        (uint8 v, bytes32 r, bytes32 s) = _sign(bank, beneficiary, amount, commitment, nonce, expiry, bankKey);
+
+        vm.deal(relayer, amount);
+        vm.prank(relayer);
+        vault.openTransfer{value: amount}(bank, beneficiary, amount, commitment, nonce, expiry, v, r, s);
+
+        bytes32 transferId = _computeTransferId(bank, beneficiary, amount, commitment, nonce, expiry);
+
+        vm.warp(block.timestamp + 2);
+
+        vm.prank(bank);
+        vm.expectRevert(InterbankVault.NotDepositor.selector);
+        vault.refund(transferId);
+
+        uint256 relayerBefore = relayer.balance;
+        vm.prank(relayer);
+        vault.refund(transferId);
+        assertEq(relayer.balance, relayerBefore + amount);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Test 12: fork Fuji deployment (optional)
     // Skipped: requires env vars; stack-too-deep in this scope.
     // To run manually: forge script script/Deploy.s.sol --rpc-url FUJI_RPC_URL
     // ─────────────────────────────────────────────────────────────

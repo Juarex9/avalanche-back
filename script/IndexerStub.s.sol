@@ -48,11 +48,7 @@ contract IndexerStubScript is Script {
     /// @param vaultAddress The deployed InterbankVault contract address.
     /// @param fromBlock The starting block number to query from.
     /// @return cmd The full cast command for event inspection.
-    function getCastLogsCommand(address vaultAddress, uint256 fromBlock)
-        public
-        pure
-        returns (string memory cmd)
-    {
+    function getCastLogsCommand(address vaultAddress, uint256 fromBlock) public pure returns (string memory cmd) {
         cmd = string.concat(
             "cast logs --rpc-url ",
             FUJI_RPC,
@@ -70,11 +66,7 @@ contract IndexerStubScript is Script {
     /// @param originalPayload The original payload that was committed (e.g. abi.encode(...))
     /// @param onChainCommitment The bytes32 commitment stored on-chain in the TransferOpened event.
     /// @return True if keccak256(originalPayload) == onChainCommitment.
-    function verifyCommitment(bytes memory originalPayload, bytes32 onChainCommitment)
-        external
-        pure
-        returns (bool)
-    {
+    function verifyCommitment(bytes memory originalPayload, bytes32 onChainCommitment) external pure returns (bool) {
         return keccak256(originalPayload) == onChainCommitment;
     }
 
@@ -95,14 +87,7 @@ contract IndexerStubScript is Script {
         uint256 bankNonce,
         uint256 expiry
     ) external pure returns (bytes32 commitment) {
-        commitment = keccak256(abi.encode(
-            bank,
-            beneficiary,
-            amount,
-            keccak256(cnbvCiphertext),
-            bankNonce,
-            expiry
-        ));
+        commitment = keccak256(abi.encode(bank, beneficiary, amount, keccak256(cnbvCiphertext), bankNonce, expiry));
     }
 
     /// @notice Parses raw event data for a TransferOpened log entry.
@@ -135,10 +120,10 @@ contract IndexerStubScript is Script {
         console.log('  "transferId": "', vm.toString(e.transferId), '",');
         console.log('  "bank": "', vm.toString(e.bank), '",');
         console.log('  "beneficiary": "', vm.toString(e.beneficiary), '",');
-        console.log('  "amount": ', e.amount, ',');
+        console.log('  "amount": ', e.amount, ",");
         console.log('  "commitment": "', vm.toString(e.commitment), '",');
-        console.log('  "expiry": ', e.expiry, ',');
-        console.log('  "blockNumber": ', e.blockNumber, ',');
+        console.log('  "expiry": ', e.expiry, ",");
+        console.log('  "blockNumber": ', e.blockNumber, ",");
         console.log('  "blockHash": "', vm.toString(e.blockHash), '",');
         console.log('  "txHash": "', vm.toString(e.txHash), '"');
         console.log("}");
@@ -147,22 +132,14 @@ contract IndexerStubScript is Script {
     /// @notice Returns example cast call to read the vault's domain separator.
     ///         Useful for off-chain signature verification.
     function getDomainSeparatorCommand(address vaultAddress) external pure returns (string memory) {
-        return string.concat(
-            "cast call ",
-            vm.toString(vaultAddress),
-            " 'EIP712_DOMAIN_SEPARATOR()' --rpc-url ",
-            FUJI_RPC
-        );
+        return
+            string.concat("cast call ", vm.toString(vaultAddress), " 'EIP712_DOMAIN_SEPARATOR()' --rpc-url ", FUJI_RPC);
     }
 
     /// @notice Returns example cast call to read a transfer's full data.
     /// @param transferId The transfer ID to look up.
     /// @return cmd The cast command to call getTransfer(transferId).
-    function getTransferCommand(address vaultAddress, bytes32 transferId)
-        external
-        pure
-        returns (string memory cmd)
-    {
+    function getTransferCommand(address vaultAddress, bytes32 transferId) external pure returns (string memory cmd) {
         cmd = string.concat(
             "cast call ",
             vm.toString(vaultAddress),

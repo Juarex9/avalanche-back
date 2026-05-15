@@ -128,8 +128,8 @@ CNBV should use their own payload structure — the above is an example format.
 # Get transfer state (0=None, 1=Opened, 2=Released, 3=Refunded)
 cast call <VAULT_ADDRESS> "getTransferState(bytes32)(uint8)" <TRANSFER_ID> --rpc-url $FUJI_RPC_URL
 
-# Get full transfer struct
-cast call <VAULT_ADDRESS> "getTransfer(bytes32)(...)" <TRANSFER_ID> --rpc-url $FUJI_RPC_URL
+# Get full transfer struct (returns: transferId, bank, beneficiary, depositor, amount, commitment, bankNonce, expiry, state)
+cast call <VAULT_ADDRESS> "getTransfer(bytes32)(bytes32,address,address,address,uint256,bytes32,uint256,uint256,uint8)" <TRANSFER_ID> --rpc-url $FUJI_RPC_URL
 ```
 
 ## Full CNBV Workflow

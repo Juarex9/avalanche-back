@@ -26,14 +26,17 @@ forge fmt
 
 ## Contract Overview
 
-**InterbankVault** — AVAX escrow contract. Banks open transfers by sending AVAX with EIP-712 authorization. FinNova's Gnosis Safe releases funds to beneficiaries. Banks can refund after expiry.
+**InterbankVault** — AVAX escrow contract. Un banco autoriza con **EIP-712**; quien envía el AVAX en `openTransfer` es el **`depositor`** (banco o relayer). Tras expiración, **solo el `depositor`** puede `refund`. El **Safe** de FinNova ejecuta `release` y el destino **debe** ser el `beneficiary` firmado.
 
 ### Key features
 
+- **OpenZeppelin ECDSA** (`tryRecover`) on EIP-712 digests: rechaza firmas **maleables (high-s)** y `v` inválidos
+- **Custom errors** en todos los reverts (menos bytecode que strings largos)
 - EIP-712 typed data signatures for bank authorization
 - Per-bank nonces to prevent replay attacks
-- Immutable `finNovaSafe` — only this address can call `release`
-- Expiry-based refund mechanism for unused transfers
+- **`depositor`** recorded per transfer — refunds return to whoever funded the escrow (fixes relayer vs bank accounting)
+- Immutable `finNovaSafe` — only this address can call `release`; `release` enforces `to == beneficiary`
+- Expiry-based refund for unused transfers
 
 ## Branch strategy
 
