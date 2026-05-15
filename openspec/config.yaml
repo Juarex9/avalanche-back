@@ -1,0 +1,36 @@
+schema: spec-driven
+
+context: |
+  Hackathon Avalanche: flujo banco→receptor + auditoría CNBV (dos candados). El equipo
+  implementa smart contracts y lógica on-chain; otra línea cubre UI/Web2.5. Despliegue:
+  C-Chain (48h) o L1 permisionada vía AvaCloud si el pitch pide red soberana. Gas:
+  AA/4337 o relayer (Defender/Biconomy). Cross-L1: Teleporter/ICT. Verdad on-chain:
+  EIP-712 + ecrecover; payload pesado en eventos, estado mínimo en storage.
+
+rules:
+  proposal:
+    - Incluir alcance explícito UI vs contratos vs SDK cliente (candados)
+  specs:
+    - Diferenciar actores Bankaool, FinNova, CNBV y estados de caja (dos candados)
+    - Usar Given/When/Then; palabras clave RFC 2119 donde aplique
+  design:
+    - Documentar flujos de pantallas, eventos/indexación y contrato como máquina de estados
+    - Relacionar C-Chain vs L1, relayer y Teleporter con diagramas cuando haya flujo cruzado
+  tasks:
+    - Agrupar por rol (banco, receptor, auditor) y por entregable vertical delgado
+  apply:
+    follow_existing_code_patterns: true
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Advertir antes de fusionar deltas destructivos
+
+strict_tdd: false
+
+testing:
+  runner: none
+  note: "Sin test runner detectado al init; reevaluar al bootstrap del stack."

@@ -1,0 +1,54 @@
+# Tasks: InterbankVault MVP
+
+## Review workload forecast
+
+| Field | Value |
+|-------|-------|
+| Estimated changed lines | 350–550 |
+| 400-line budget risk | Medium |
+| Chained PRs recommended | Yes |
+| Suggested split | PR1 scaffold+vault core → PR2 tests+scripts → PR3 (opcional) stub indexador |
+| Delivery strategy | ask-on-risk |
+
+```text
+Decision needed before apply: Yes
+Chained PRs recommended: Yes
+Chain strategy: stacked-to-main
+400-line budget risk: Medium
+```
+
+### Suggested work units
+
+| Unit | Goal | Likely PR |
+|------|------|-----------|
+| 1 | Foundry + `InterbankVault` open/release/refund + eventos | PR1 |
+| 2 | Tests negativos/positivos + `script/Deploy.s.sol` Fuji | PR2 |
+| 3 | Stub indexador o doc API (opcional demo) | PR3 |
+
+## Phase 1: Foundation
+
+- [ ] 1.1 Inicializar Foundry (`foundry.toml`, `src/`, `test/`, `script/`, `lib/` OZ via `forge install`).
+- [ ] 1.2 Fijar Solidity pragma y formatter del repo; README mínimo de build/test.
+- [ ] 1.3 Constantes EIP-712 (`_DOMAIN_TYPEHASH`, `TRANSFER_TYPEHASH`) y helpers `_hashTypedDataV4`.
+
+## Phase 2: Core contract
+
+- [ ] 2.1 `InterbankVault.sol`: immutables `finNovaSafe`, `cnbvViewPubKey`; estado por `transferId`; nonces por `bank`.
+- [ ] 2.2 `openTransfer(...) payable`: verificar firma EIP-712, `msg.value==amount`, `expiry`, emit `TransferOpened` (+ chunks ciphertext si aplica).
+- [ ] 2.3 `release(transferId,to)`: `onlyFinNovaSafe`, CEI, envío AVAX a `to` igual a `beneficiary` almacenado.
+- [ ] 2.4 `refund(transferId)`: solo `bank`, estado Opened, `block.timestamp > expiry`, devolver AVAX.
+
+## Phase 3: Verification
+
+- [ ] 3.1 Tests: open válido, replay nonce falla, EOA `release` revierte, refund pre-expiry revierte, happy path open→release.
+- [ ] 3.2 Test fork Fuji opcional: deploy + Safe real o mock `finNovaSafe` address.
+- [ ] 3.3 `script/Deploy.s.sol`: constructor args desde env; verificación manual en explorer.
+
+## Phase 4: Handoff demo
+
+- [ ] 4.1 Documentar addresses Fuji y flujo Safe (1 tx ejemplo) en comentarios o README corto.
+- [ ] 4.2 Checklist gas: tamaño calldata eventos; ajustar chunk si falla en Fuji.
+
+## Next
+
+`sdd-apply` por unidad; no mergear PR2 antes de verde PR1.
