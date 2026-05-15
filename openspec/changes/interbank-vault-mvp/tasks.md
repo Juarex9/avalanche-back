@@ -27,16 +27,16 @@ Chain strategy: stacked-to-main
 
 ## Phase 1: Foundation
 
-- [ ] 1.1 Inicializar Foundry (`foundry.toml`, `src/`, `test/`, `script/`, `lib/` OZ via `forge install`).
-- [ ] 1.2 Fijar Solidity pragma y formatter del repo; README mínimo de build/test.
-- [ ] 1.3 Constantes EIP-712 (`_DOMAIN_TYPEHASH`, `TRANSFER_TYPEHASH`) y helpers `_hashTypedDataV4`.
+- [x] 1.1 Inicializar Foundry (`foundry.toml`, `src/`, `test/`, `script/`, `lib/` OZ via `forge install`).
+- [x] 1.2 Fijar Solidity pragma y formatter del repo; README mínimo de build/test.
+- [x] 1.3 Constantes EIP-712 (`_DOMAIN_TYPEHASH`, `TRANSFER_TYPEHASH`) y helpers `_hashTypedDataV4`.
 
 ## Phase 2: Core contract
 
-- [ ] 2.1 `InterbankVault.sol`: immutables `finNovaSafe`, `cnbvViewPubKey`; estado por `transferId`; nonces por `bank`.
-- [ ] 2.2 `openTransfer(...) payable`: verificar firma EIP-712, `msg.value==amount`, `expiry`, emit `TransferOpened` (+ chunks ciphertext si aplica).
-- [ ] 2.3 `release(transferId,to)`: `onlyFinNovaSafe`, CEI, envío AVAX a `to` igual a `beneficiary` almacenado.
-- [ ] 2.4 `refund(transferId)`: solo `bank`, estado Opened, `block.timestamp > expiry`, devolver AVAX.
+- [x] 2.1 `InterbankVault.sol`: immutables `finNovaSafe`, `cnbvViewPubKey`; estado por `transferId`; nonces por `bank`.
+- [x] 2.2 `openTransfer(...) payable`: verificar firma EIP-712, `msg.value==amount`, `expiry`, emit `TransferOpened` (+ chunks ciphertext si aplica).
+- [x] 2.3 `release(transferId,to)`: `onlyFinNovaSafe`, CEI, envío AVAX a `to` igual a `beneficiary` almacenado.
+- [x] 2.4 `refund(transferId)`: solo `bank`, estado Opened, `block.timestamp > expiry`, devolver AVAX.
 
 ## Phase 3: Verification
 
