@@ -1,0 +1,11 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "compiler-version": ["error", "^0.8.28"],
+    "func-visibility": ["warn", {"ignoreConstructors": true}],
+    "not-rely-on-time": "off",
+    "avoid-low-level-calls": "off",
+    "mark-callable-contracts": "off",
+    "state-visibility": "off"
+  }
+}
