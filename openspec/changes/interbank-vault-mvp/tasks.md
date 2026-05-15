@@ -49,6 +49,20 @@ Chain strategy: stacked-to-main
 - [x] 4.1 Documentar addresses Fuji y flujo Safe (1 tx ejemplo) en comentarios o README corto.
 - [x] 4.2 Checklist gas: tamaño calldata eventos; ajustar chunk si falla en Fuji.
 
+## Phase 5: Indexer stub (PR3)
+
+- [x] 5.1 `script/IndexerStub.s.sol`: cast command helpers, commitment verification, event parsing helpers.
+- [x] 5.2 `docs/INDEXER.md`: flujo CNBV → indexador → decrypt, cast examples, commitment verification, JSON format.
+- [x] 5.3 `.env.example`: actualizar con `INDEXER_VAULT_ADDRESS`, `INDEXER_FROM_BLOCK`.
+
+## PR History
+
+| PR | Branch | Contents | Status |
+|----|--------|----------|--------|
+| PR1 | `pr/scaffold-vault-core` | Foundry scaffold + vault core + EIP-712 | merged |
+| PR2 | `pr/tests-deploy` | Tests + Deploy.s.sol | merged |
+| PR3 | `pr/indexer-stub` | IndexerStub + INDEXER.md docs | ✅ complete |
+
 ## Next
 
-`sdd-apply` por unidad; no mergear PR2 antes de verde PR1.
+MVP completo — todas las fases implementadas.

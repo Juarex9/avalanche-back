@@ -39,7 +39,16 @@ forge fmt
 
 - `pr/scaffold-vault-core` — Phase 1+2 (scaffold + vault core)
 - `pr/tests-deploy` — Phase 3 (tests + deploy script)
-- `pr/indexer-stub` — Phase 4 (indexer stub + docs) [optional]
+- `pr/indexer-stub` — Phase 5 (indexer stub + docs) ✅
+
+## Indexer stub (Phase 5)
+
+CNBV uses `script/IndexerStub.s.sol` and `docs/INDEXER.md` to:
+- Query `TransferOpened` events via `cast logs`
+- Parse event data for decryption
+- Verify commitments against on-chain hashes
+
+See [docs/INDEXER.md](docs/INDEXER.md) for full workflow.
 
 ## Fuji deployment
 
