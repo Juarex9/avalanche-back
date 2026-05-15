@@ -40,14 +40,14 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: Verification
 
-- [ ] 3.1 Tests: open válido, replay nonce falla, EOA `release` revierte, refund pre-expiry revierte, happy path open→release.
-- [ ] 3.2 Test fork Fuji opcional: deploy + Safe real o mock `finNovaSafe` address.
-- [ ] 3.3 `script/Deploy.s.sol`: constructor args desde env; verificación manual en explorer.
+- [x] 3.1 Tests: open válido, replay nonce falla, EOA `release` revierte, refund pre-expiry revierte, happy path open→release.
+- [x] 3.2 Test fork Fuji opcional: deploy + Safe real o mock `finNovaSafe` address.
+- [x] 3.3 `script/Deploy.s.sol`: constructor args desde env; verificación manual en explorer.
 
 ## Phase 4: Handoff demo
 
-- [ ] 4.1 Documentar addresses Fuji y flujo Safe (1 tx ejemplo) en comentarios o README corto.
-- [ ] 4.2 Checklist gas: tamaño calldata eventos; ajustar chunk si falla en Fuji.
+- [x] 4.1 Documentar addresses Fuji y flujo Safe (1 tx ejemplo) en comentarios o README corto.
+- [x] 4.2 Checklist gas: tamaño calldata eventos; ajustar chunk si falla en Fuji.
 
 ## Next
 
