@@ -40,3 +40,35 @@ forge fmt
 - `pr/scaffold-vault-core` — Phase 1+2 (scaffold + vault core)
 - `pr/tests-deploy` — Phase 3 (tests + deploy script)
 - `pr/indexer-stub` — Phase 4 (indexer stub + docs) [optional]
+
+## Fuji deployment
+
+```bash
+# 1. Copy and fill in environment variables
+cp .env.example .env
+
+# 2. Deploy to Fuji
+forge script script/Deploy.s.sol \
+  --rpc-url $FUJI_RPC_URL \
+  --broadcast \
+  -vv
+```
+
+The deploy script reads:
+- `PRIVATE_KEY` — deployer key with AVAX on Fuji
+- `FIN_NOVA_SAFE` — FinNova Gnosis Safe address (authorized to call `release`)
+- `CNBV_VIEW_PUB_KEY` — CNBV view public key (bytes32)
+
+### Typical Safe release flow (manual)
+
+1. Bank calls `openTransfer` on-chain with signed payload and AVAX
+2. FinNova Safe operator reviews the transfer via the CNBV view key
+3. FinNova executes `release(transferId, beneficiary)` from the Safe multisig
+4. Beneficiary receives AVAX directly
+
+### Gas notes
+
+- `TransferOpened` event: ~4 fields + indexed transferId + 2 addresses
+- `TransferReleased` event: ~3 fields
+- `TransferRefunded` event: ~3 fields
+- No chunking needed at MVP scale; monitor calldata if >200 transfers/day
