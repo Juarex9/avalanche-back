@@ -1,0 +1,17 @@
+{
+  "chainId": 43113,
+  "network": "avalanche-fuji",
+  "deployer": "0x79d23BB592FD230e441874d0e889C58f8FD92E07",
+  "deployBlock": 55444226,
+  "tokenName": "Cello",
+  "tokenSymbol": "CELL",
+  "registrationVerifier": "0x211a0a20C531d1AFea6525467ffc3b732e1270B9",
+  "mintVerifier": "0x965754CEf85EB3304eC27AEded6B26862baDdf18",
+  "withdrawVerifier": "0x5e1c435F93532a278e03fBeAc495F85A657ae949",
+  "transferVerifier": "0xb99B025E05037547bd9BDeEaCEe9a9805436f3E0",
+  "burnVerifier": "0x07Caf0cfbc794EE42a541ab496DAD9d2809A570F",
+  "babyJubJub": "0xd886BE0043B76bF10F22d2c57Db909456B1c7093",
+  "registrar": "0x5Faa4fa174a2dC7b29473b94B86AF16309fC806D",
+  "encryptedERC": "0x45C1316953c92C402AB9e14EA628182A3494FD7F",
+  "auditorAddress": "0xC8af2C4e87C942F82BaBC4da98364C2c1A82DF32"
+}
