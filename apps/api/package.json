@@ -11,9 +11,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@avalabs/eerc-sdk": "^1.0.2",
     "fastify": "^4.26.0",
-    "viem": "^2.21.0",
-    "sql.js": "^1.10.0"
+    "sql.js": "^1.10.0",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

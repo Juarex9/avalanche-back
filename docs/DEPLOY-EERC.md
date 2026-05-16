@@ -1,5 +1,7 @@
 # Deploy EncryptedERC (eERC20) — guía para el equipo de contratos
 
+> **Testnet únicamente:** desplegar el contrato a **Avalanche Fuji** (u otra testnet acordada). No usar Anvil/red local como destino del MVP para addresses que consuma el front.
+
 > **Producto Veila (hackathon):** el frontend usa **EncryptedERC** vía `@avalabs/eerc-sdk`.  
 > El contrato **InterbankVault** en este repo es legacy (escrow AVAX); no lo uses para Veila salvo demo paralela.
 
@@ -12,16 +14,19 @@
 ## Prerrequisitos
 
 ```bash
-# Foundry
+# Foundry (solo si también compilás InterbankVault en la raíz del monorepo)
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
+```
 
-# Clonar EncryptedERC (fuera de este monorepo o como submodule)
+Código **eERC**: si ya tenés la carpeta **`EncryptedERC/`** en la raíz del monorepo, `cd EncryptedERC` y seguí su README (**npm / Hardhat**). Si no, cloná el repo aparte:
+
+```bash
 git clone https://github.com/ava-labs/EncryptedERC.git
 cd EncryptedERC
 ```
 
-Seguí el README del repo para `forge build` y scripts de deploy en **Avalanche Fuji** (C-Chain, `chainId` 43113).
+Seguí el README de ese repo para instalar dependencias, compilar y deploy en **Avalanche Fuji** (C-Chain, `chainId` 43113).
 
 ## Pasos de deploy (checklist)
 
@@ -124,5 +129,6 @@ Variables: `PRIVATE_KEY`, `FIN_NOVA_SAFE`, `CNBV_VIEW_PUB_KEY`, etc.
 
 ## Referencias
 
+- [Diseño: dos flujos (eERC + InterbankVault)](./design-dual-contract-flows.md)
 - [Deploy checklist coordinado](../../docs/DEPLOY.md)
 - [Guion demo](../../docs/DEMO.md)

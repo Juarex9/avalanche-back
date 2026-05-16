@@ -3,6 +3,8 @@ import type { Database } from '../db/sqlite.js';
 import { getPublicClient } from '../chain/client.js';
 import { getTransfers, getTransferById, type TransferRow } from '../db/repo.js';
 import { authMiddleware } from './auth.js';
+import { registerVeilaRoutes } from './routes/veila.js';
+import { registerLiquidacionAvaxRoutes } from './routes/liquidacion-avax.js';
 
 interface TransferQuery {
   bank?: string;
@@ -70,4 +72,8 @@ export async function registerRoutes(
       return transfer;
     },
   );
+
+  // ─── Dual-flow routes (open — no authMiddleware, for demo purposes) ─────────
+  await registerVeilaRoutes(app);
+  await registerLiquidacionAvaxRoutes(app);
 }

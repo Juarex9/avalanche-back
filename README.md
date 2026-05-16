@@ -1,7 +1,7 @@
 # avalanche-back — contratos
 
-> **Veila (hackathon)** usa **EncryptedERC (eERC20)**, no InterbankVault.  
-> **Deploy eERC:** [docs/DEPLOY-EERC.md](docs/DEPLOY-EERC.md) · **Coordinación:** [../docs/DEPLOY.md](../docs/DEPLOY.md)
+> **Veila (hackathon)** usa **EncryptedERC (eERC20)**; el vault AVAX es flujo paralelo opcional.  
+> **Dos flujos en la misma app:** [docs/design-dual-contract-flows.md](docs/design-dual-contract-flows.md) · **Deploy eERC:** [docs/DEPLOY-EERC.md](docs/DEPLOY-EERC.md) · **Coordinación:** [../docs/DEPLOY.md](../docs/DEPLOY.md)
 
 ---
 
@@ -64,7 +64,9 @@ CNBV uses `script/IndexerStub.s.sol` and `docs/INDEXER.md` to:
 
 See [docs/INDEXER.md](docs/INDEXER.md) for full workflow.
 
-## Fuji deployment
+## Fuji deployment (testnet únicamente)
+
+Todas las addresses del MVP apuntan a **Fuji** (testnet). No se documenta despliegue “oficial” a Anvil u otra cadena local para integración con la app.
 
 ```bash
 # 1. Copy and fill in environment variables

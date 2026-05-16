@@ -4,6 +4,7 @@ import { loadConfig } from './config.js';
 import { getPublicClient } from './chain/client.js';
 import { runSync } from './indexer/sync.js';
 import { registerRoutes } from './http/routes.js';
+import { getDualFlowConfig } from './http/dual-flow.js';
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS transfers (
@@ -28,6 +29,23 @@ CREATE TABLE IF NOT EXISTS indexer_cursor (
 
 async function main() {
   const config = loadConfig();
+
+  // Boot-time dual-flow validation — warn only, do not crash
+  const dualFlowConfig = getDualFlowConfig();
+  if (dualFlowConfig.enabled && dualFlowConfig.eercAddress && dualFlowConfig.vaultAddress) {
+    if (dualFlowConfig.eercAddress.toLowerCase() === dualFlowConfig.vaultAddress.toLowerCase()) {
+      console.warn(
+        '[boot] WARNING: Dual-flow contract addresses are identical. ' +
+          'NEXT_PUBLIC_EERC_CONTRACT_ADDRESS == NEXT_PUBLIC_VAULT_CONTRACT_ADDRESS. ' +
+          'Disabling dual-flow feature. This is a copy-paste error.',
+      );
+    } else {
+      console.log(`[boot] Dual-flow enabled — eERC: ${dualFlowConfig.eercAddress}, Vault: ${dualFlowConfig.vaultAddress}`);
+    }
+  } else if (!dualFlowConfig.enabled) {
+    console.log('[boot] Dual-flow feature flag is off (NEXT_PUBLIC_DUAL_FLOW_ENABLED=false)');
+  }
+
   const dbPath = config.databaseUrl;
 
   // Ensure data directory exists
