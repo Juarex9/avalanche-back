@@ -47,14 +47,14 @@ export function getDualFlowConfig(): DualFlowConfig {
  * Middleware-style guard: returns early with 503 if dual-flow is disabled.
  * Does NOT crash the server — warns only.
  */
-export type DualFlowType = 'veila' | 'liquidacion-avax';
+export type DualFlowType = 'cello' | 'liquidacion-avax';
 
 export function dualFlowGuard(flow: DualFlowType) {
   const config = getDualFlowConfig();
   if (!config.enabled) {
     return {
       enabled: false,
-      flowType: flow === 'veila' ? 'eerc' : 'vault',
+      flowType: flow === 'cello' ? 'eerc' : 'vault',
     };
   }
   return { enabled: true };

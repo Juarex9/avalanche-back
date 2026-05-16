@@ -28,7 +28,7 @@ En este workspace el clone suele vivir en **raíz del repo**, junto a Foundry:
 
 1. **Desplegar / fijar** en **testnet (Fuji)** dos direcciones: contrato **standalone** desde [`EncryptedERC/`](../EncryptedERC/) e `InterbankVault` con Foundry. Guías: [`DEPLOY-EERC.md`](./DEPLOY-EERC.md) y README raíz (Fuji). *(La carpeta `EncryptedERC/` es código en disco; la red destino sigue siendo testnet, no anvil.)*
 2. **Variables de entorno duplicadas por dominio:** prefijos claros (`NEXT_PUBLIC_EERC_*` vs `NEXT_PUBLIC_VAULT_*` o equivalente server-side) — **nunca** reutilizar la misma key para ambas.
-3. **Router o módulos:** Flujo A (Veila / eERC SDK) y Flujo B (vault / viem o wagmi directo al ABI del vault).
+3. **Router o módulos:** Flujo A (Cello / eERC SDK) y Flujo B (vault / viem o wagmi directo al ABI del vault).
 4. **Verificar:** una tx de registro o transfer eERC; otra de `openTransfer` / lectura de eventos vault según demo.
 
 ---
@@ -45,7 +45,7 @@ En este workspace el clone suele vivir en **raíz del repo**, junto a Foundry:
 
 ---
 
-## Flujo A — EncryptedERC (eERC20 / Veila)
+## Flujo A — EncryptedERC (eERC20 / Cello)
 
 | Aspecto | Detalle |
 |---------|---------|
@@ -111,7 +111,7 @@ Objetivo de negocio: **empresas eligen qué auditar** ante CNBV.
 
 | Riesgo | Mitigación |
 |--------|------------|
-| Usuario confunde AVAX con “token Veila” | Nombres de pantalla, iconos y textos fijos (“Liquidación AVAX” vs “Saldo cifrado eERC”). |
+| Usuario confunde AVAX con “token Cello” | Nombres de pantalla, iconos y textos fijos (“Liquidación AVAX” vs “Saldo cifrado eERC”). |
 | Misma env mal copiada | Validación al boot: checksum de dos direcciones distintas; assert `vault != eerc`. |
 | Doble mantenimiento de ABI | Vault: una fuente de verdad (`forge build` → copia ABI); eERC: tipos desde SDK / artifact EncryptedERC. |
 | Seguridad API | API key solo server-to-server; flujo eERC sigue principalmente en wallet + RPC público limitado. |
@@ -122,7 +122,7 @@ Objetivo de negocio: **empresas eligen qué auditar** ante CNBV.
 
 ### Fase 1 — Front dual (mínimo viable)
 
-- [ ] Rutas o secciones: `/veila` (o nombre acordado) y `/liquidacion-avax` (ejemplo).
+- [ ] Rutas o secciones: `/cello` (o nombre acordado) y `/liquidacion-avax` (ejemplo).
 - [ ] Env con prefijos no ambiguos; documentar en `.env.example` del front.
 - [ ] Sin obligar backend: lecturas on-chain del vault desde el front si hace falta demo puntual.
 - [ ] Contrato eERC desplegado desde `EncryptedERC/` (ej. `npx hardhat run scripts/deploy-standalone.ts --network …` según su README); anotar address y bloque para el front.

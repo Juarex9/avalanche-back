@@ -1,6 +1,6 @@
 # avalanche-back — contratos
 
-> **Veila (hackathon)** usa **EncryptedERC (eERC20)**; el vault AVAX es flujo paralelo opcional.  
+> **Cello (hackathon)** usa **EncryptedERC (eERC20)**; el vault AVAX es flujo paralelo opcional.  
 > **Dos flujos en la misma app:** [docs/design-dual-contract-flows.md](docs/design-dual-contract-flows.md) · **Deploy eERC:** [docs/DEPLOY-EERC.md](docs/DEPLOY-EERC.md) · **Coordinación:** [../docs/DEPLOY.md](../docs/DEPLOY.md)
 
 ---

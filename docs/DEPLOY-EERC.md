@@ -2,8 +2,8 @@
 
 > **Testnet únicamente:** desplegar el contrato a **Avalanche Fuji** (u otra testnet acordada). No usar Anvil/red local como destino del MVP para addresses que consuma el front.
 
-> **Producto Veila (hackathon):** el frontend usa **EncryptedERC** vía `@avalabs/eerc-sdk`.  
-> El contrato **InterbankVault** en este repo es legacy (escrow AVAX); no lo uses para Veila salvo demo paralela.
+> **Producto Cello (hackathon):** el frontend usa **EncryptedERC** vía `@avalabs/eerc-sdk`.  
+> El contrato **InterbankVault** en este repo es legacy (escrow AVAX); no lo uses para Cello salvo demo paralela.
 
 ## Repositorio oficial
 
@@ -36,7 +36,7 @@ Seguí el README de ese repo para instalar dependencias, compilar y deploy en **
 |-----|-----|
 | **Deployer / Owner** | Deploy del contrato; puede llamar `setContractAuditorPublicKey` |
 | **Auditor (CNBV)** | Wallet que firmará `auditorDecrypt` en la UI |
-| **Institución A / B** | Registro y transferencias en Veila |
+| **Institución A / B** | Registro y transferencias en Cello |
 
 Fondeá con AVAX: [faucet Fuji](https://faucet.avax.network/).
 
@@ -63,7 +63,7 @@ La clave pública del auditor debe alinearse con el protocolo eERC (ver docs del
 
 ### 4. Registro de instituciones
 
-Cada wallet institucional debe llamar `register()` una vez (vía Veila `/registro` o script).
+Cada wallet institucional debe llamar `register()` una vez (vía Cello `/registro` o script).
 
 ### 5. (Opcional) Mint privado
 

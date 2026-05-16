@@ -1,7 +1,7 @@
 /**
- * /veila route group — eERC (EncryptedERC) flow.
+ * /cello route group — eERC (EncryptedERC) flow.
  *
- * GET /veila/status returns the current flow configuration.
+ * GET /cello/status returns the current flow configuration.
  * When disabled: returns 503 with { flow_type: 'eerc', enabled: false }.
  * When enabled:  returns 200 with full flow metadata.
  */
@@ -11,9 +11,9 @@ import { getDualFlowConfig } from '../dual-flow.js';
 import { getEercClient } from '../../chain/eerc.js';
 import { getVaultAddress } from '../../chain/vault.js';
 
-export async function registerVeilaRoutes(app: FastifyInstance): Promise<void> {
+export async function registerCelloRoutes(app: FastifyInstance): Promise<void> {
   app.get(
-    '/veila/status',
+    '/cello/status',
     async (_req: FastifyRequest, reply: FastifyReply) => {
       const config = getDualFlowConfig();
 
@@ -24,7 +24,6 @@ export async function registerVeilaRoutes(app: FastifyInstance): Promise<void> {
           .send({ flow_type: 'eerc', enabled: false });
       }
 
-      // Attempt to read SDK status — do not crash if RPC is down
       let sdkInitialized = false;
       try {
         getEercClient();
@@ -40,7 +39,7 @@ export async function registerVeilaRoutes(app: FastifyInstance): Promise<void> {
         .type('application/json')
         .send({
           flow_type: 'eerc',
-          label: 'Transferencia privada Veila',
+          label: 'Transferencia privada Cello',
           enabled: true,
           contract_address: contractAddress,
           sdk_initialized: sdkInitialized,
