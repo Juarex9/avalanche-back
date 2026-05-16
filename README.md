@@ -1,4 +1,11 @@
-# InterbankVault MVP
+# avalanche-back — contratos
+
+> **Veila (hackathon)** usa **EncryptedERC (eERC20)**, no InterbankVault.  
+> **Deploy eERC:** [docs/DEPLOY-EERC.md](docs/DEPLOY-EERC.md) · **Coordinación:** [../docs/DEPLOY.md](../docs/DEPLOY.md)
+
+---
+
+# InterbankVault MVP (legacy)
 
 Smart contract escrow for interbank AVAX transfers with EIP-712 authorization and Gnosis Safe custody.
 
