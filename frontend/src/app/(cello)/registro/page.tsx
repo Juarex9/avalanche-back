@@ -8,6 +8,7 @@ import { Feedback } from "@/components/feedback";
 import { TxLink } from "@/components/tx-link";
 import { PageHeader } from "@/components/cello/page-header";
 import { ImportDemoKey } from "@/components/cello/import-demo-key";
+import { KeyBackupPanel } from "@/components/cello/key-backup-panel";
 import { PageShell } from "@/components/cello/page-shell";
 import { ZkProgress } from "@/components/zk-progress";
 import { useCelloEerc } from "@/contexts/eerc-context";
@@ -185,6 +186,8 @@ export default function RegistroPage() {
             : "Importá la clave local primero"}
         </button>
       )}
+
+      <KeyBackupPanel />
 
       <ImportDemoKey />
 

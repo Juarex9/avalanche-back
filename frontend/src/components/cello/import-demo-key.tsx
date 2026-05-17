@@ -79,12 +79,9 @@ export function ImportDemoKey() {
       <div className="panel mt-4" role="note">
         <p className="panel-label mb-1">Wallet ya registrada on-chain</p>
         <p className="panel-text text-sm">
-          Si completaste el registro en este navegador, la clave de descifrado se
-          guardó al finalizar. Si cambiaste de equipo o borraste el almacenamiento
-          local, necesitás la misma clave que generó el registro (no se puede
-          recuperar desde el servidor salvo que el equipo haya configurado la
-          demo con <code className="text-xs">DEMO_TEAM_PASSPHRASE</code> y claves
-          en el servidor).
+          Si completaste el registro en este navegador, la clave se guardó
+          automáticamente. Si cambiaste de equipo o borraste el almacenamiento,
+          usá <strong>Importar clave</strong> arriba con tu archivo de respaldo.
         </p>
       </div>
     );
