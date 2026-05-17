@@ -12,6 +12,17 @@ dotenv.config();
 
 const RPC_URL = process.env.RPC_URL || "https://api.avax.network/ext/bc/C/rpc";
 
+const deployerKeyRaw =
+  process.env.DEPLOYER_PRIVATE_KEY?.trim() ?? process.env.PRIVATE_KEY?.trim();
+function normalizeHexPrivateKey(raw: string | undefined): string[] {
+  if (!raw) return [];
+  const t = raw.trim();
+  if (t.startsWith("0x") && /^0x[0-9a-fA-F]{64}$/.test(t)) return [t];
+  if (/^[0-9a-fA-F]{64}$/.test(t)) return [`0x${t}`];
+  return [];
+}
+const fujiAccounts = normalizeHexPrivateKey(deployerKeyRaw);
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.27",
@@ -29,6 +40,17 @@ const config: HardhatUserConfig = {
         blockNumber: 59121339,
         enabled: !!process.env.FORKING,
       },
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+    },
+    /** Avalanche Fuji (C-Chain) — mismo chainId que el frontend (`wagmi` / `avalancheFuji`). */
+    avalancheFuji: {
+      url:
+        process.env.AVALANCHE_FUJI_RPC_URL ??
+        "https://api.avax-test.network/ext/bc/C/rpc",
+      chainId: 43113,
+      accounts: fujiAccounts,
     },
   },
   gasReporter: {

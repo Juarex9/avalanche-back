@@ -20,10 +20,14 @@
 		"prettier": "^3.5.3",
 		"prettier-plugin-solidity": "^1.4.2",
 		"solhint": "^5.0.5",
-		"solidity-coverage": "^0.8.14"
+		"solidity-coverage": "^0.8.14",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.2"
 	},
 	"scripts": {
 		"test": "mocha 'src/**/*.test.js'",
+		"deploy:fuji:standalone": "npx hardhat run scripts/deploy-standalone.ts --network avalancheFuji",
+		"deploy:localhost:standalone": "npx hardhat run scripts/deploy-standalone.ts --network localhost",
 		"postinstall": "npx hardhat compile & npx hardhat zkit make --force && npx hardhat zkit verifiers",
 		"lint:sol": "solhint '**/*.sol' --config ./.solhint.json --ignore-path ./.solhintignore --max-warnings 0 && npx prettier --check '**/*.sol' --config ./.prettierrc",
 		"lint:ts": "npx biome lint .",
