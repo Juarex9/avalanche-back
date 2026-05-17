@@ -17,18 +17,27 @@ import {
   useEncryptedBalanceHook,
   useCelloEerc,
 } from "@/contexts/eerc-context";
-import { getVerifiedCounterparties } from "@/data/demo";
+import { useInstitutions } from "@/hooks/use-institutions";
 import { getEercContractAddress } from "@/lib/contracts";
 import { loadDecryptionKey } from "@/lib/decryption-key-storage";
 import { formatTransferError } from "@/lib/format-transfer-error";
 import { indexTransferOnServer } from "@/lib/index-transfer";
 import { shortAddress } from "@/lib/format-address";
 
+function sanitizeAmount(raw: string): string {
+  // Replace comma with dot, allow only one dot
+  let v = raw.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+  const parts = v.split(".");
+  if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
+  return v;
+}
+
 export default function TransferenciasPage() {
   const { address, isConnected } = useAccount();
   const { sdk, hasDecryptionKey, persistDecryptionKey } = useCelloEerc();
   const balance = useEncryptedBalanceHook();
   const contract = getEercContractAddress();
+  const { institutions, loading: loadingInst, db: dbInst } = useInstitutions();
 
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
@@ -39,11 +48,12 @@ export default function TransferenciasPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const counterparties = getVerifiedCounterparties();
   const decimals = balance.decimals ? Number(balance.decimals) : 18;
   const bal = balance.parsedDecryptedBalance ?? "—";
 
-  function pickCounterparty(addr?: `0x${string}`) {
+  const approvedInstitutions = institutions.filter((i) => i.kycStatus === "approved");
+
+  function pickCounterparty(addr?: string) {
     if (addr) {
       setDestination(addr);
       setError(null);
@@ -68,7 +78,7 @@ export default function TransferenciasPage() {
       const storedKey = loadDecryptionKey();
       if (!storedKey) {
         setError(
-          "Falta la clave de descifrado. Pegá cello-eerc-decryption-key en consola (FASES-DEMO.md) y recargá, o completá /registro con esta wallet.",
+          "Falta la clave de descifrado. Completá /registro con esta wallet o importá tu clave de respaldo."
         );
         return;
       }
@@ -79,7 +89,7 @@ export default function TransferenciasPage() {
       }
       const trimmed = destination.trim();
       if (!isAddress(trimmed)) {
-        setError("Destino inválido: dirección 0x completa.");
+        setError("Destino inválido: ingresá una dirección 0x completa.");
         return;
       }
       const { isRegistered: destOk } = await sdk.isAddressRegistered(trimmed);
@@ -87,13 +97,14 @@ export default function TransferenciasPage() {
         setError("El destinatario debe estar registrado en eERC20.");
         return;
       }
-      if (!amount.trim()) {
-        setError("Indicá un monto.");
+      const cleanAmount = sanitizeAmount(amount);
+      if (!cleanAmount || cleanAmount === "." || parseFloat(cleanAmount) <= 0) {
+        setError("Indicá un monto válido mayor a 0.");
         return;
       }
 
       setFeedback("Generando prueba ZK (1–2 min). No cierres la pestaña…");
-      const parsed = parseUnits(amount.trim(), decimals);
+      const parsed = parseUnits(cleanAmount, decimals);
       const { transactionHash } = await balance.privateTransfer(
         trimmed,
         parsed,
@@ -112,6 +123,8 @@ export default function TransferenciasPage() {
         contractAddress: contract,
       });
       setAmount("");
+      setDestination("");
+      setReference("");
     } catch (err) {
       setError(formatTransferError(err));
     } finally {
@@ -124,7 +137,7 @@ export default function TransferenciasPage() {
       <div className="app-layout">
         <aside aria-label="Resumen">
           <div className="bal-block">
-                        <div className="bal-label">Saldo descifrado</div>
+            <div className="bal-label">Saldo descifrado</div>
             <div className="bal-val">{bal}</div>
             <div className="bal-currency">
               {sdk.symbol || "eERC"} · {shortAddress(contract)}
@@ -144,7 +157,7 @@ export default function TransferenciasPage() {
           <Feedback message={error} variant="error" />
           {sdk.isRegistered && !hasDecryptionKey ? (
             <Feedback
-              message="Falta la clave de descifrado. En /registro usá «Cargar clave desde el deploy» con el código de equipo."
+              message="Falta la clave de descifrado. En /registro exportá tu respaldo o importá una clave existente."
               variant="info"
             />
           ) : null}
@@ -168,7 +181,7 @@ export default function TransferenciasPage() {
           <form className="form-card" onSubmit={onSubmit}>
             <div className="form-card-head">
               <div className="form-card-title">Datos</div>
-              <div className="form-card-meta">ZK · dual-lock</div>
+              <div className="form-card-meta">ZK · privado</div>
             </div>
             <div className="fields">
               <div className="fl">
@@ -180,7 +193,7 @@ export default function TransferenciasPage() {
                   className="fl-input"
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
-                  placeholder="0x…"
+                  placeholder="0x… o seleccioná una institución →"
                   autoComplete="off"
                 />
               </div>
@@ -194,7 +207,7 @@ export default function TransferenciasPage() {
                     style={{ flex: 1 }}
                     inputMode="decimal"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setAmount(sanitizeAmount(e.target.value))}
                     placeholder="0"
                   />
                   <span className="currency-sel">{sdk.symbol || "TOKEN"}</span>
@@ -230,26 +243,38 @@ export default function TransferenciasPage() {
 
         <aside className="right" aria-label="Contrapartes">
           <div className="panel">
-            <p className="panel-label">Contrapartes</p>
-            <div className="cp-list">
-              {counterparties.map((cp) => (
-                <button
-                  key={cp.addrShort}
-                  type="button"
-                  className="cp"
-                  disabled={!cp.address}
-                  onClick={() => pickCounterparty(cp.address)}
-                >
-                  <span className="cp-av">{cp.initials}</span>
-                  <span className="cp-body">
-                    <span className="cp-name">{cp.name}</span>
-                    <span className="cp-addr">
-                      {cp.address ? shortAddress(cp.address) : "sin .env"}
+            <p className="panel-label">Instituciones registradas</p>
+            {!dbInst ? (
+              <p className="panel-text text-sm">
+                Directorio no disponible. Ingresá la dirección manualmente o
+                contactá a la contraparte.
+              </p>
+            ) : loadingInst ? (
+              <p className="panel-text text-sm">Cargando…</p>
+            ) : approvedInstitutions.length === 0 ? (
+              <p className="panel-text text-sm">
+                Sin instituciones aprobadas todavía. Sos la primera.
+              </p>
+            ) : (
+              <div className="cp-list">
+                {approvedInstitutions.map((cp) => (
+                  <button
+                    key={cp.walletAddress}
+                    type="button"
+                    className="cp"
+                    onClick={() => pickCounterparty(cp.walletAddress)}
+                  >
+                    <span className="cp-av">{cp.initials}</span>
+                    <span className="cp-body">
+                      <span className="cp-name">{cp.name}</span>
+                      <span className="cp-addr">
+                        {shortAddress(cp.walletAddress)}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <p className="panel-text mt-3">
             <Link href="/recibir" className="text-[var(--text2)] underline-offset-2 hover:underline">
