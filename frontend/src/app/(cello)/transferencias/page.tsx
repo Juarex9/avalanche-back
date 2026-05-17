@@ -157,6 +157,13 @@ export default function TransferenciasPage() {
             <div className="bal-currency">
               {sdk.symbol || "eERC"} · {shortAddress(contract)}
             </div>
+            {(balance.decryptedBalance ?? 0n) <= 0n && sdk.isRegistered && (
+              <div className="mt-2 text-[11px] text-[var(--orange)]">
+                ⚠️ Sin saldo. {sdk.isConverter ? (
+                  <Link href="/deposito" className="underline">Depositá primero</Link>
+                ) : "Esperá mint"}
+              </div>
+            )}
           </div>
           <WalletStatus />
         </aside>
@@ -177,15 +184,25 @@ export default function TransferenciasPage() {
             />
           ) : null}
           {sdk.isRegistered && hasDecryptionKey && (balance.decryptedBalance ?? 0n) <= 0n ? (
-            <div className="panel mb-4" role="note">
-              <p className="panel-label mb-1">Sin saldo eERC</p>
-              <p className="panel-text text-sm">
-                Tu wallet está registrada pero no tenés tokens eERC. Para obtener saldo:
+            <div className="panel mb-4 border-l-4 border-[var(--orange)]" role="note">
+              <p className="panel-label mb-1">⚠️ Sin saldo eERC</p>
+              <p className="panel-text text-sm mb-2">
+                Tu wallet está registrada pero no tenés saldo para transferir.
               </p>
-              <ul className="panel-text text-sm list-disc ml-4 mt-1">
-                <li><strong>Standalone:</strong> El owner del contrato debe ejecutar <code>privateMint(tuAddress)</code> desde el deployer.</li>
-                <li><strong>Converter:</strong> Andá a la sección de depósito y convertí tokens ERC20 a eERC.</li>
-              </ul>
+              {sdk.isConverter ? (
+                <>
+                  <p className="panel-text text-sm mb-2">
+                    En modo converter, tenés que depositar tokens ERC20 primero para obtener saldo eERC cifrado.
+                  </p>
+                  <Link href="/deposito" className="primary-btn inline-block text-sm">
+                    Ir a Depósito →
+                  </Link>
+                </>
+              ) : (
+                <p className="panel-text text-sm">
+                  En modo standalone, el owner del contrato debe ejecutar <code>privateMint(tuAddress)</code>.
+                </p>
+              )}
             </div>
           ) : null}
           <Feedback
@@ -235,7 +252,8 @@ export default function TransferenciasPage() {
                     inputMode="decimal"
                     value={amount}
                     onChange={(e) => setAmount(sanitizeAmount(e.target.value))}
-                    placeholder="0"
+                    placeholder={(balance.decryptedBalance ?? 0n) <= 0n ? "Depositá primero" : "0"}
+                    disabled={(balance.decryptedBalance ?? 0n) <= 0n}
                   />
                   <span className="currency-sel">{sdk.symbol || "TOKEN"}</span>
                 </div>
@@ -257,9 +275,9 @@ export default function TransferenciasPage() {
               <button
                 type="submit"
                 className="submit-btn"
-                disabled={busy || !sdk.isRegistered}
+                disabled={busy || !sdk.isRegistered || (balance.decryptedBalance ?? 0n) <= 0n}
               >
-                {busy ? "Enviando…" : "Transferir"}
+                {busy ? "Enviando…" : (balance.decryptedBalance ?? 0n) <= 0n ? "Sin saldo — Depositá primero" : "Transferir"}
               </button>
             </div>
           </form>
