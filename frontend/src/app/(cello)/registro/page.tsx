@@ -7,6 +7,7 @@ import { useAccount } from "wagmi";
 import { Feedback } from "@/components/feedback";
 import { TxLink } from "@/components/tx-link";
 import { PageHeader } from "@/components/cello/page-header";
+import { AdminMintPanel } from "@/components/cello/admin-mint-panel";
 import { ImportDemoKey } from "@/components/cello/import-demo-key";
 import { KeyBackupPanel } from "@/components/cello/key-backup-panel";
 import { PageShell } from "@/components/cello/page-shell";
@@ -188,6 +189,8 @@ export default function RegistroPage() {
       )}
 
       <KeyBackupPanel />
+
+      <AdminMintPanel />
 
       <ImportDemoKey />
 

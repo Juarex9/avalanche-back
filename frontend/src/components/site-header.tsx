@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/logo-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WalletButton } from "@/components/wallet-button";
+import { useCelloEerc } from "@/contexts/eerc-context";
 
-const NAV = [
+const BASE_NAV = [
   { href: "/registro", label: "Registro" },
   { href: "/transferencias", label: "Transferencias" },
   { href: "/recibir", label: "Recibir" },
@@ -16,6 +17,17 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { sdk } = useCelloEerc();
+
+  const nav = sdk.isConverter
+    ? [
+        { href: "/registro", label: "Registro" },
+        { href: "/deposito", label: "Depósito" },
+        { href: "/transferencias", label: "Transferencias" },
+        { href: "/retiro", label: "Retiro" },
+        { href: "/auditoria", label: "Auditoría" },
+      ]
+    : BASE_NAV;
 
   return (
     <header className="site-header">
@@ -26,7 +38,7 @@ export function SiteHeader() {
       </div>
 
       <nav className="site-header-nav nav-tabs" aria-label="Secciones de la aplicación">
-        {NAV.map(({ href, label }) => {
+        {nav.map(({ href, label }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
             <Link
