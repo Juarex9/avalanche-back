@@ -1,9 +1,6 @@
-# Deploy EncryptedERC (eERC20) — guía para el equipo de contratos
+# Deploy EncryptedERC (eERC20) — guía para el equipo
 
-> **Testnet únicamente:** desplegar el contrato a **Avalanche Fuji** (u otra testnet acordada). No usar Anvil/red local como destino del MVP para addresses que consuma el front.
-
-> **Producto Cello (hackathon):** el frontend usa **EncryptedERC** vía `@avalabs/eerc-sdk`.  
-> El contrato **InterbankVault** en este repo es legacy (escrow AVAX); no lo uses para Cello salvo demo paralela.
+> **Testnet únicamente:** desplegar el contrato a **Avalanche Fuji** (C-Chain, `chainId` 43113).
 
 ## Repositorio oficial
 
@@ -13,20 +10,14 @@
 
 ## Prerrequisitos
 
-```bash
-# Foundry (solo si también compilás InterbankVault en la raíz del monorepo)
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-```
-
-Código **eERC**: si ya tenés la carpeta **`EncryptedERC/`** en la raíz del monorepo, `cd EncryptedERC` y seguí su README (**npm / Hardhat**). Si no, cloná el repo aparte:
+El código **eERC** está en la carpeta **`EncryptedERC/`** (submodule en la raíz del repo):
 
 ```bash
-git clone https://github.com/ava-labs/EncryptedERC.git
 cd EncryptedERC
+npm install
 ```
 
-Seguí el README de ese repo para instalar dependencias, compilar y deploy en **Avalanche Fuji** (C-Chain, `chainId` 43113).
+Seguí el README de ese repo para compilar contratos y circuitos.
 
 ## Pasos de deploy (checklist)
 
@@ -41,6 +32,11 @@ Seguí el README de ese repo para instalar dependencias, compilar y deploy en **
 Fondeá con AVAX: [faucet Fuji](https://faucet.avax.network/).
 
 ### 2. Deploy del contrato
+
+```bash
+cd EncryptedERC
+npx hardhat run scripts/deploy-standalone.ts --network fuji
+```
 
 - Modo recomendado para hackathon: **standalone** eERC (nombre/símbolo propios)
 - Anotar:
@@ -59,7 +55,7 @@ setContractAuditorPublicKey(<auditorAddress>)
 
 La clave pública del auditor debe alinearse con el protocolo eERC (ver docs del contrato / SDK).
 
-**Verificación en UI:** en `/registro` → nota “clave auditor en contrato: configurada”.
+**Verificación en UI:** en `/registro` → nota "clave auditor en contrato: configurada".
 
 ### 4. Registro de instituciones
 
@@ -71,7 +67,7 @@ Si el contrato permite `privateMint` al owner, mintear saldo inicial a wallets d
 
 ## Entregable al frontend
 
-Enviar al canal del equipo (Slack/issue) este bloque:
+Enviar al canal del equipo este bloque:
 
 ```env
 # Pegar en Vercel / frontend/.env.local
@@ -85,38 +81,12 @@ NEXT_PUBLIC_DEMO_FINNOVA=0x...     # wallet B registrada
 ## Verificación on-chain
 
 ```bash
-# Ejemplo con cast (ajustar ABI y RPC)
 export RPC=https://api.avax-test.network/ext/bc/C/rpc
 export CONTRACT=0x...
 
 cast call $CONTRACT "auditor()(address)" --rpc-url $RPC
 cast call $CONTRACT "owner()(address)" --rpc-url $RPC
 ```
-
-## Indexer (fase 2)
-
-El front aún no lista historial on-chain completo. Para indexar:
-
-1. `INDEXER_FROM_BLOCK` = bloque de deploy
-2. Escuchar eventos del contrato EncryptedERC (ver ABI en repo Ava Labs)
-3. Exponer API REST o pasar hashes al front para `decryptTransaction`
-
-Stub legacy de vault: [INDEXER.md](./INDEXER.md) (solo InterbankVault).
-
-## InterbankVault (legacy en este repo)
-
-Si necesitás el vault AVAX + EIP-712:
-
-```bash
-cd avalanche-back
-cp .env.example .env
-forge build && forge test
-# Ver README.md raíz de avalanche-back
-```
-
-Variables: `PRIVATE_KEY`, `FIN_NOVA_SAFE`, `CNBV_VIEW_PUB_KEY`, etc.
-
-**No** mezclar dirección del vault con `NEXT_PUBLIC_EERC_CONTRACT_ADDRESS` del front.
 
 ## Troubleshooting
 
@@ -125,10 +95,7 @@ Variables: `PRIVATE_KEY`, `FIN_NOVA_SAFE`, `CNBV_VIEW_PUB_KEY`, etc.
 | `areYouAuditor` false en UI | Auditor no configurado o wallet incorrecta |
 | Destino no registrado | `register()` en wallet B |
 | Owner no puede set auditor | Usar wallet deployer |
-| OpenZeppelin vacío | `git submodule update --init --recursive` en avalanche-back |
 
 ## Referencias
 
-- [Diseño: dos flujos (eERC + InterbankVault)](./design-dual-contract-flows.md)
-- [Deploy checklist coordinado](../../docs/DEPLOY.md)
 - [Guion demo](../../docs/DEMO.md)

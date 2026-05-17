@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
 import { Feedback } from "@/components/feedback";
@@ -13,10 +13,12 @@ export function ImportDemoKey() {
   const [passphrase, setPassphrase] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  /** Solo mostramos “código de equipo” si el deploy tiene DEMO_* (Vercel / demo pública). */
+  const [demoUnlockConfigured, setDemoUnlockConfigured] = useState<
+    boolean | null
+  >(null);
 
-  if (!sdk.isRegistered) return null;
-
-  async function unlockFromDeploy() {
+  const unlockFromDeploy = useCallback(async () => {
     if (!address) {
       setMsg("Conectá la wallet demo en Fuji primero.");
       return;
@@ -41,9 +43,14 @@ export function ImportDemoKey() {
         ok?: boolean;
         decryptionKey?: string;
         error?: string;
+        missing?: string[];
       };
       if (!res.ok || !data.decryptionKey) {
-        setMsg(data.error ?? "No se pudo desbloquear la clave en el servidor.");
+        const extra =
+          Array.isArray(data.missing) && data.missing.length
+            ? ` Faltan en el servidor: ${data.missing.join(", ")}.`
+            : "";
+        setMsg((data.error ?? "No se pudo desbloquear la clave en el servidor.") + extra);
         return;
       }
       persistDecryptionKey(data.decryptionKey);
@@ -54,6 +61,33 @@ export function ImportDemoKey() {
     } finally {
       setBusy(false);
     }
+  }, [address, passphrase, persistDecryptionKey]);
+
+  useEffect(() => {
+    void fetch("/api/demo/status")
+      .then((r) => r.json() as Promise<{ demoUnlockConfigured?: boolean }>)
+      .then((d) => setDemoUnlockConfigured(Boolean(d.demoUnlockConfigured)))
+      .catch(() => setDemoUnlockConfigured(false));
+  }, []);
+
+  if (!sdk.isRegistered) return null;
+  if (demoUnlockConfigured === null) return null;
+
+  if (!demoUnlockConfigured) {
+    if (hasDecryptionKey) return null;
+    return (
+      <div className="panel mt-4" role="note">
+        <p className="panel-label mb-1">Wallet ya registrada on-chain</p>
+        <p className="panel-text text-sm">
+          Si completaste el registro en este navegador, la clave de descifrado se
+          guardó al finalizar. Si cambiaste de equipo o borraste el almacenamiento
+          local, necesitás la misma clave que generó el registro (no se puede
+          recuperar desde el servidor salvo que el equipo haya configurado la
+          demo con <code className="text-xs">DEMO_TEAM_PASSPHRASE</code> y claves
+          en el servidor).
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -67,10 +101,11 @@ export function ImportDemoKey() {
         <p className="panel-label mb-0">
           {hasDecryptionKey
             ? "Clave institucional en sesión"
-            : "Wallet ya registrada: desbloquear en producción"}
+            : "Wallet ya registrada: desbloquear (demo con servidor)"}
         </p>
         <p className="panel-text text-sm mt-1">
-          Usá el código del equipo — funciona en cello-avax.vercel.app sin consola.
+          Solo si el deploy tiene variables DEMO_*: código compartido por el
+          equipo (p. ej. demo en Vercel sin consola).
         </p>
       </button>
       {open && !hasDecryptionKey ? (

@@ -1,4 +1,4 @@
-import { isDemoUnlockConfigured, getDemoWalletAddresses } from "@/lib/demo-server";
+import { isDemoUnlockConfigured, getDemoWalletAddresses, getDemoUnlockMissingEnv } from "@/lib/demo-server";
 import { resolveEercContract } from "@/lib/eerc-config";
 import { getPublicEnv } from "@/lib/env";
 
@@ -10,6 +10,7 @@ export async function GET() {
     productionUrl: "https://cello-avax.vercel.app",
     contract: resolveEercContract(env),
     demoUnlockConfigured: isDemoUnlockConfigured(),
+    demoUnlockMissingEnv: getDemoUnlockMissingEnv(),
     demoWallets: getDemoWalletAddresses(),
   });
 }

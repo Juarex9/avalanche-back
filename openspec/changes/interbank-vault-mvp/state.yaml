@@ -1,9 +1,0 @@
-change: interbank-vault-mvp
-phase: ready-for-apply
-last_updated: "2026-05-15"
-artifacts:
-  proposal: true
-  design: true
-  specs: false
-  tasks: true
-notes: "tasks.md + execution-plan-multiagent.md. Ejecución multi-agente: A→B→(C||D); E opcional. No lanzar agentes hasta orden explícita del usuario."

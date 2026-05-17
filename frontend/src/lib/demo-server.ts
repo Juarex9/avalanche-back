@@ -20,12 +20,17 @@ export function getDemoPassphrase(): string | undefined {
   return process.env.DEMO_TEAM_PASSPHRASE?.trim();
 }
 
+/** Nombres de env que faltan para que `/api/demo/unlock-key` funcione. */
+export function getDemoUnlockMissingEnv(): string[] {
+  const missing: string[] = [];
+  if (!getDemoPassphrase()) missing.push("DEMO_TEAM_PASSPHRASE");
+  if (!DEMO_KEYS.bankaool) missing.push("DEMO_BANKAOOL_DECRYPTION_KEY");
+  if (!DEMO_KEYS.finnova) missing.push("DEMO_FINNOVA_DECRYPTION_KEY");
+  return missing;
+}
+
 export function isDemoUnlockConfigured(): boolean {
-  return Boolean(
-    getDemoPassphrase() &&
-      DEMO_KEYS.bankaool &&
-      DEMO_KEYS.finnova,
-  );
+  return getDemoUnlockMissingEnv().length === 0;
 }
 
 export function resolveDemoRole(

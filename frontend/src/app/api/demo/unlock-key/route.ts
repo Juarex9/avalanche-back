@@ -3,6 +3,7 @@ import { isAddress } from "viem";
 import {
   getDemoDecryptionKey,
   getDemoPassphrase,
+  getDemoUnlockMissingEnv,
   isDemoUnlockConfigured,
   resolveDemoRole,
 } from "@/lib/demo-server";
@@ -16,10 +17,12 @@ type Body = {
 
 export async function POST(request: Request) {
   if (!isDemoUnlockConfigured()) {
+    const missing = getDemoUnlockMissingEnv();
     return Response.json(
       {
         error:
-          "Demo unlock no configurado en el servidor. Agregá DEMO_TEAM_PASSPHRASE y claves en Vercel.",
+          "Demo unlock incompleto en el servidor. En Vercel tenés que definir las tres variables (Production + redeploy).",
+        missing,
       },
       { status: 503 },
     );
