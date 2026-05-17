@@ -1,6 +1,17 @@
-# Deploy EncryptedERC (eERC20) — guía para el equipo
+# Deploy EncryptedERC (eERC20) — guía del equipo
 
 > **Testnet únicamente:** desplegar el contrato a **Avalanche Fuji** (C-Chain, `chainId` 43113).
+
+## Deploy actual (Converter Mode)
+
+Último deploy realizado el 17/05/2026:
+
+| Contrato | Address |
+|----------|---------|
+| **EncryptedERC (converter)** | `0x1941D0E27642B4F20F5fC5a0D31096EB4a729926` |
+| **ERC20 subyacente** | `0x49949573b20E6bb9Cc1d1d8a5D48d036c17EA86B` |
+| **Registrar** | `0x3ca3F3AB065094f7E1E35A9Ba5C87CD15D5A22A4` |
+| **Owner / Deployer** | `0x79d23BB592FD230e441874d0e889C58f8FD92E07` |
 
 ## Repositorio oficial
 
@@ -10,92 +21,71 @@
 
 ## Prerrequisitos
 
-El código **eERC** está en la carpeta **`EncryptedERC/`** (submodule en la raíz del repo):
-
 ```bash
 cd EncryptedERC
 npm install
 ```
 
-Seguí el README de ese repo para compilar contratos y circuitos.
+## Deploy (si necesitás re-deploy)
 
-## Pasos de deploy (checklist)
-
-### 1. Preparar wallets
-
-| Rol | Uso |
-|-----|-----|
-| **Deployer / Owner** | Deploy del contrato; puede llamar `setContractAuditorPublicKey` |
-| **Auditor (CNBV)** | Wallet que firmará `auditorDecrypt` en la UI |
-| **Institución A / B** | Registro y transferencias en Cello |
-
-Fondeá con AVAX: [faucet Fuji](https://faucet.avax.network/).
-
-### 2. Deploy del contrato
-
+### Standalone (owner mintea saldo)
 ```bash
 cd EncryptedERC
-npx hardhat run scripts/deploy-standalone.ts --network fuji
+npx hardhat run scripts/deploy-standalone.ts --network avalancheFuji
 ```
 
-- Modo recomendado para hackathon: **standalone** eERC (nombre/símbolo propios)
-- Anotar:
-  - `CONTRACT_ADDRESS`
-  - `DEPLOY_BLOCK`
-  - `OWNER_ADDRESS`
-  - `AUDITOR_ADDRESS`
-
-### 3. Configurar auditor
-
-Solo el **owner** puede ejecutar:
-
-```text
-setContractAuditorPublicKey(<auditorAddress>)
+### Converter (depositar ERC20 → eERC)
+```bash
+cd EncryptedERC
+npx hardhat run scripts/deploy-converter.ts --network avalancheFuji
 ```
 
-La clave pública del auditor debe alinearse con el protocolo eERC (ver docs del contrato / SDK).
+Anotar las addresses del output.
 
-**Verificación en UI:** en `/registro` → nota "clave auditor en contrato: configurada".
+## Configuración del frontend
 
-### 4. Registro de instituciones
-
-Cada wallet institucional debe llamar `register()` una vez (vía Cello `/registro` o script).
-
-### 5. (Opcional) Mint privado
-
-Si el contrato permite `privateMint` al owner, mintear saldo inicial a wallets demo para transferencias sin depósito previo.
-
-## Entregable al frontend
-
-Enviar al canal del equipo este bloque:
+En `frontend/.env.local`:
 
 ```env
-# Pegar en Vercel / frontend/.env.local
-NEXT_PUBLIC_EERC_CONTRACT_ADDRESS=0x...
-NEXT_PUBLIC_EERC_MODE=standalone
-NEXT_PUBLIC_INDEXER_FROM_BLOCK=<deploy_block>
-NEXT_PUBLIC_DEMO_BANKAOOL=0x...    # wallet A registrada
-NEXT_PUBLIC_DEMO_FINNOVA=0x...     # wallet B registrada
+# Modo converter
+NEXT_PUBLIC_EERC_CONTRACT_ADDRESS=0x1941D0E27642B4F20F5fC5a0D31096EB4a729926
+NEXT_PUBLIC_EERC_MODE=converter
+NEXT_PUBLIC_CONVERTER_ERC20_ADDRESS=0x49949573b20E6bb9Cc1d1d8a5D48d036c17EA86B
+NEXT_PUBLIC_AVALANCHE_FUJI_RPC=https://api.avax-test.network/ext/bc/C/rpc
+NEXT_PUBLIC_INDEXER_FROM_BLOCK=38293000
 ```
+
+## Configurar auditor (owner)
+
+El owner debe:
+1. Conectar su wallet en `/registro`
+2. Registrarse (si no lo hizo)
+3. Ir a `/auditoria` → botón "Configurar auditor"
+4. Designar la wallet del regulador
+
+## Flujo de uso (Converter)
+
+1. **Registro**: Cada institución se registra en `/registro` (genera clave ZK)
+2. **Depósito**: En `/deposito`, convertí ERC20 → eERC
+3. **Transferencias**: En `/transferencias`, enviá eERC privado a otra institución registrada
+4. **Retiro**: En `/retiro`, convertí eERC → ERC20
+5. **Auditoría**: El regulador designado puede descifrar montos en `/auditoria`
 
 ## Verificación on-chain
 
 ```bash
 export RPC=https://api.avax-test.network/ext/bc/C/rpc
-export CONTRACT=0x...
+export CONTRACT=0x1941D0E27642B4F20F5fC5a0D31096EB4a729926
 
-cast call $CONTRACT "auditor()(address)" --rpc-url $RPC
 cast call $CONTRACT "owner()(address)" --rpc-url $RPC
+cast call $CONTRACT "auditor()(address)" --rpc-url $RPC
 ```
 
 ## Troubleshooting
 
 | Error | Solución |
 |-------|----------|
-| `areYouAuditor` false en UI | Auditor no configurado o wallet incorrecta |
-| Destino no registrado | `register()` en wallet B |
-| Owner no puede set auditor | Usar wallet deployer |
-
-## Referencias
-
-- [Guion demo](../../docs/DEMO.md)
+| `areYouAuditor` false | Auditor no configurado — el owner debe ejecutar paso 4 arriba |
+| Saldo eERC 0 | Depositá ERC20 en `/deposito` (modo converter) |
+| Destino no registrado | La contraparte debe completar `/registro` primero |
+| `Invalid amount` | Saldo insuficiente o formato incorrecto (usá punto, no coma) |
