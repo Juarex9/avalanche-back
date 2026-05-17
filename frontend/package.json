@@ -1,0 +1,43 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint",
+    "circuits:fetch": "bash scripts/fetch-circuits.sh",
+    "check:eerc": "node scripts/check-eerc-fuji.mjs",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('public/circuits/RegistrationCircuit.wasm')){console.log('Run: npm run circuits:fetch')}\""
+  },
+  "dependencies": {
+    "@avalabs/eerc-sdk": "1.0.2",
+    "@neondatabase/serverless": "^0.10.4",
+    "@tanstack/react-query": "^5.72.2",
+    "buffer": "^6.0.3",
+    "drizzle-orm": "^0.38.3",
+    "crypto-browserify": "^3.12.1",
+    "next": "16.2.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "stream-browserify": "^3.0.0",
+    "viem": "2.26.3",
+    "wagmi": "2.14.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
