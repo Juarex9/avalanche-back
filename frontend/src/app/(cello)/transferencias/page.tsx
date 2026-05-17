@@ -103,8 +103,23 @@ export default function TransferenciasPage() {
         return;
       }
 
-      setFeedback("Generando prueba ZK (1–2 min). No cierres la pestaña…");
+      // Validar saldo disponible
       const parsed = parseUnits(cleanAmount, decimals);
+      const available = balance.decryptedBalance ?? 0n;
+      if (available <= 0n) {
+        setError(
+          "Saldo eERC insuficiente (0). En modo standalone, el owner del contrato debe ejecutar privateMint() a tu wallet. En modo converter, depositá tokens ERC20 primero."
+        );
+        return;
+      }
+      if (parsed > available) {
+        setError(
+          `Monto mayor al saldo disponible. Tenés ${balance.parsedDecryptedBalance ?? "0"} ${sdk.symbol || "TOKEN"}.`
+        );
+        return;
+      }
+
+      setFeedback("Generando prueba ZK (1–2 min). No cierres la pestaña…");
       const { transactionHash } = await balance.privateTransfer(
         trimmed,
         parsed,
@@ -160,6 +175,18 @@ export default function TransferenciasPage() {
               message="Falta la clave de descifrado. En /registro exportá tu respaldo o importá una clave existente."
               variant="info"
             />
+          ) : null}
+          {sdk.isRegistered && hasDecryptionKey && (balance.decryptedBalance ?? 0n) <= 0n ? (
+            <div className="panel mb-4" role="note">
+              <p className="panel-label mb-1">Sin saldo eERC</p>
+              <p className="panel-text text-sm">
+                Tu wallet está registrada pero no tenés tokens eERC. Para obtener saldo:
+              </p>
+              <ul className="panel-text text-sm list-disc ml-4 mt-1">
+                <li><strong>Standalone:</strong> El owner del contrato debe ejecutar <code>privateMint(tuAddress)</code> desde el deployer.</li>
+                <li><strong>Converter:</strong> Andá a la sección de depósito y convertí tokens ERC20 a eERC.</li>
+              </ul>
+            </div>
           ) : null}
           <Feedback
             message={feedback}
